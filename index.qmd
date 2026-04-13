@@ -1,0 +1,66 @@
+---
+title: "EPICC Quarterly Infographic Brief"
+format:
+  html:
+    theme: styles/epicc.scss
+    toc: false
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+
+extensions:
+  - quarto-ext/fontawesome
+  - shafayetShafee/bsicons
+
+params:
+  report_date: "2026-01-01"
+  fiscal_system: "state"
+  period: "quarter"
+---
+
+```{r}
+#| label: load-epicc-data
+
+# Set default fallback parameters for running code interactively during
+# development since Quarto params are only passed when rendering the document
+if (
+  !exists(
+    "params"
+  )
+) {
+  params <- list(
+    report_date = "2026-01-01",
+    fiscal_system = "state",
+    period = "quarter"
+  )
+}
+
+# Load ETL output
+source(
+  "R/load_data.R"
+)
+
+# Run the function to load EPICC data
+epicc_data <- load_epicc_data()
+```
+
+```{r}
+#| label: filter-epicc-data
+
+period <- reporting_period(
+  date = params$report_date,
+  system = params$fiscal_system,
+  period = "quarter"
+)
+
+start_date <- period$start
+end_date <- period$end
+
+epicc_full_data <- epicc_data$epicc_full_data |>
+  dplyr::filter(
+    enrollment_starting_date >= start_date,
+    enrollment_starting_date <= end_date
+  )
+```
